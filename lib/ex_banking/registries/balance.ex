@@ -1,4 +1,4 @@
-defmodule ExBanking.UserRegistry do
+defmodule ExBanking.BalanceRegistry do
   @moduledoc false
 
   require Logger
@@ -10,8 +10,8 @@ defmodule ExBanking.UserRegistry do
     )
   end
 
-  def lookup_user(user_id) do
-    case Registry.lookup(__MODULE__, user_id) do
+  def lookup_balance(user, currency) do
+    case Registry.lookup(__MODULE__, {user, currency}) do
       [{pid, _}] -> {:ok, pid}
       [] -> {:error, :not_found}
     end
