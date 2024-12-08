@@ -10,6 +10,11 @@ defmodule ExBankingTest do
       assert ExBanking.create_user("") == {:error, :wrong_arguments}
     end
 
+    test "given same user, should return error" do
+      assert ExBanking.create_user("same_user") == :ok
+      assert ExBanking.create_user("same_user") == {:error, :user_already_exists}
+    end
+
     test "given valid string as user, should return ok" do
       assert ExBanking.create_user("user") == :ok
     end

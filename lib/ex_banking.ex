@@ -1,10 +1,12 @@
 defmodule ExBanking do
   @moduledoc false
 
-  @spec create_user(user :: String.t()) :: :ok | {:error, :wrong_arguments}
+  alias ExBanking.Users
+
+  @spec create_user(user :: String.t()) :: :ok | {:error, :wrong_arguments | :user_already_exists}
   def create_user(user) do
     with :ok <- validate_string(user) do
-      :ok
+      Users.create_user(user)
     end
   end
 
