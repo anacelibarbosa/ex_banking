@@ -24,7 +24,8 @@ defmodule ExBanking.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:decimal, "~> 2.0"}
     ]
   end
 
