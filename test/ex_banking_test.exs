@@ -21,6 +21,10 @@ defmodule ExBankingTest do
   end
 
   describe "get_balance/2" do
+    test "given invalid params, with missing user, should return error" do
+      assert ExBanking.get_balance("missing", "usd") == {:error, :user_does_not_exist}
+    end
+
     test "given valid params, should return correctly" do
       assert ExBanking.create_user("user_1") == :ok
       assert ExBanking.get_balance("user_1", "usd") == {:ok, 0.00}
