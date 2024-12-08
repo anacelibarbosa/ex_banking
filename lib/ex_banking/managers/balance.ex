@@ -14,6 +14,6 @@ defmodule ExBanking.BalanceManager do
 
   @impl true
   def init(_opts) do
-    {:ok, 0.00}
+    {:ok, Decimal.new("0.00")}
   end
 end

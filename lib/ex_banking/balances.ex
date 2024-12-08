@@ -10,9 +10,15 @@ defmodule ExBanking.Balances do
 
   @spec get_balance(user, currency) :: {:ok, balance_amount}
   def get_balance(user, currency) do
+    decimal_amount = get_balance_state(user, currency)
+
+    {:ok, Decimal.to_float(decimal_amount)}
+  end
+
+  defp get_balance_state(user, currency) do
     pid = get_balance_registry(user, currency)
 
-    {:ok, :sys.get_state(pid)}
+    :sys.get_state(pid)
   end
 
   defp get_balance_registry(user, currency) do
