@@ -1,18 +1,13 @@
 defmodule ExBanking do
-  @moduledoc """
-  Documentation for `ExBanking`.
-  """
+  @moduledoc false
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ExBanking.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @spec create_user(user :: String.t()) :: :ok | {:error, :wrong_arguments}
+  def create_user(user) do
+    with :ok <- validate_string(user) do
+      :ok
+    end
   end
+
+  defp validate_string(string) when is_bitstring(string) and string != "", do: :ok
+  defp validate_string(_invalid_string), do: {:error, :wrong_arguments}
 end
