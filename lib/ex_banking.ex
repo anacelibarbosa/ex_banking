@@ -3,6 +3,8 @@ defmodule ExBanking do
 
   alias ExBanking.Users
 
+  @user_operations_max_concurrency 10
+
   @type currency :: String.t()
   @type user :: String.t()
 
@@ -32,7 +34,9 @@ defmodule ExBanking do
   end
 
   defp do_get_balance(user, currency) do
-    Semaphore.call(user, 10, fn -> Users.get_user_balance(user, currency) end)
+    Semaphore.call(user, @user_operations_max_concurrency, fn ->
+      Users.get_user_balance(user, currency)
+    end)
   end
 
   defp validate_string(string) when is_bitstring(string) and string != "", do: :ok
