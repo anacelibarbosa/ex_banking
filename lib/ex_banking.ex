@@ -2,7 +2,6 @@ defmodule ExBanking do
   @moduledoc false
 
   alias ExBanking.Users
-  alias ExBanking.Balances
 
   @type currency :: String.t()
   @type user :: String.t()
@@ -23,9 +22,17 @@ defmodule ExBanking do
   def get_balance(user, currency) do
     with :ok <- validate_string(user),
          :ok <- validate_string(currency),
-         {:ok, _user} <- Users.get_user(user) do
-      Balances.get_balance(user, currency)
+         {:ok, _user_pid} <- Users.get_user(user),
+         {:ok, balance} <- do_get_balance(user, currency) do
+      {:ok, Decimal.to_float(balance)}
+    else
+      {:error, :max} -> {:error, :too_many_requests_to_user}
+      error -> error
     end
+  end
+
+  defp do_get_balance(user, currency) do
+    Semaphore.call(user, 10, fn -> Users.get_user_balance(user, currency) end)
   end
 
   defp validate_string(string) when is_bitstring(string) and string != "", do: :ok

@@ -3,6 +3,7 @@ defmodule ExBanking.Users do
 
   alias ExBanking.UserDynamicSupervisor
   alias ExBanking.UserRegistry
+  alias ExBanking.Users.Balances
 
   @spec create_user(user :: String.t()) :: :ok | {:error, :user_already_exists}
   def create_user(user) do
@@ -15,11 +16,16 @@ defmodule ExBanking.Users do
     end
   end
 
-  @spec get_user(user :: String.t()) :: {:ok, any()} | {:error, any()}
+  @spec get_user(user :: String.t()) :: {:ok, any()} | {:error, :user_does_not_exist}
   def get_user(user) do
     case UserRegistry.lookup_user(user) do
       {:error, :not_found} -> {:error, :user_does_not_exist}
-      {:ok, _pid} -> {:ok, user}
+      {:ok, pid} -> {:ok, pid}
     end
+  end
+
+  @spec get_user_balance(String.t(), String.t()) :: {:ok, any()} | {:error, any()}
+  def get_user_balance(user, currency) do
+    Balances.get_balance(user, currency)
   end
 end

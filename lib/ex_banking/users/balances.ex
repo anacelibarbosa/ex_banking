@@ -1,24 +1,16 @@
-defmodule ExBanking.Balances do
+defmodule ExBanking.Users.Balances do
   @moduledoc false
 
   alias ExBanking.BalanceDynamicSupervisor
   alias ExBanking.BalanceRegistry
 
-  @type user :: String.t()
-  @type currency :: String.t()
-  @type balance_amount :: number()
-
-  @spec get_balance(user, currency) :: {:ok, balance_amount}
+  @spec get_balance(String.t(), String.t()) :: {:ok, any()}
   def get_balance(user, currency) do
-    decimal_amount = get_balance_state(user, currency)
-
-    {:ok, Decimal.to_float(decimal_amount)}
-  end
-
-  defp get_balance_state(user, currency) do
     pid = get_balance_registry(user, currency)
 
-    :sys.get_state(pid)
+    balance = :sys.get_state(pid)
+
+    {:ok, balance}
   end
 
   defp get_balance_registry(user, currency) do
