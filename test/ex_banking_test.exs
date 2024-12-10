@@ -58,7 +58,7 @@ defmodule ExBankingTest do
       assert ExBanking.withdraw("user_4", "usd", "0") === {:error, :wrong_arguments}
     end
 
-    test "given invalid params, with greater amount than balance, should return correctly" do
+    test "given invalid params, with greater amount than balance, should return error" do
       assert ExBanking.create_user("user_5") == :ok
       assert ExBanking.get_balance("user_5", "usd") === {:ok, 0.00}
       assert ExBanking.deposit("user_5", 2.125, "usd") === {:ok, 2.13}
@@ -78,6 +78,22 @@ defmodule ExBankingTest do
       assert ExBanking.create_user("user_8") == :ok
       assert ExBanking.deposit("user_7", 10, "usd") === {:ok, 10.00}
       assert ExBanking.send("user_7", "user_8", 2.124, "usd") === {:ok, {7.88, 2.12}}
+    end
+
+    test "given invalid params, with missing from_user, should return error" do
+      assert ExBanking.send("missing_3", "user", 0, "usd") === {:error, :sender_does_not_exist}
+    end
+
+    test "given invalid params, with missing to_user, should return error" do
+      assert ExBanking.create_user("user_9") == :ok
+      assert ExBanking.send("user_9", "missing_4", 0, "usd") == {:error, :receiver_does_not_exist}
+    end
+
+    test "given invalid params, with greater amount than from_user_balance, should return error" do
+      assert ExBanking.create_user("from_user") == :ok
+      assert ExBanking.create_user("to_user") == :ok
+      assert ExBanking.deposit("from_user", 11, "usd") === {:ok, 11.00}
+      assert ExBanking.send("from_user", "to_user", 11.01, "usd") == {:error, :not_enough_money}
     end
   end
 end
