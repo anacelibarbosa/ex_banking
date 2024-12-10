@@ -3,8 +3,6 @@ defmodule ExBanking do
 
   alias ExBanking.Users
 
-  @user_operations_max_concurrency 10
-
   @type currency :: String.t()
   @type user :: String.t()
   @type from_user :: String.t()
@@ -68,9 +66,8 @@ defmodule ExBanking do
   end
 
   defp do_deposit(user, currency, amount) do
-    Semaphore.call(user, @user_operations_max_concurrency, fn ->
-      Users.deposit_amount_to_balance(user, currency, amount)
-    end)
+    fn -> Users.deposit_amount_to_balance(user, currency, amount) end
+    |> call_semaphore(user, "user")
   end
 
   @spec withdraw(user, amount, currency) :: {:ok, new_balance} | {:error, withdraw_error}
@@ -88,9 +85,8 @@ defmodule ExBanking do
   end
 
   defp do_withdraw(user, currency, amount) do
-    Semaphore.call(user, @user_operations_max_concurrency, fn ->
-      Users.withdraw_amount_from_balance(user, currency, amount)
-    end)
+    fn -> Users.withdraw_amount_from_balance(user, currency, amount) end
+    |> call_semaphore(user, "user")
   end
 
   @spec get_balance(user, currency) :: {:ok, balance} | {:error, get_balance_error}
@@ -107,9 +103,8 @@ defmodule ExBanking do
   end
 
   defp do_get_balance(user, currency) do
-    Semaphore.call(user, @user_operations_max_concurrency, fn ->
-      Users.get_user_balance(user, currency)
-    end)
+    fn -> Users.get_user_balance(user, currency) end
+    |> call_semaphore(user, "user")
   end
 
   @spec send(from_user, to_user, amount, currency) :: send_result_tuple
@@ -138,19 +133,14 @@ defmodule ExBanking do
     end
   end
 
-  defp do_transfer(from_user, to_user, amount, currency) do
-    Semaphore.call(from_user, @user_operations_max_concurrency, fn ->
-      case do_transfer_funds(from_user, to_user, currency, amount) do
-        {:error, :max} -> {:error, :too_many_requests_to_receiver}
-        result -> result
-      end
-    end)
+  defp do_transfer(from_user, to_user, currency, amount) do
+    fn -> do_transfer_funds(from_user, to_user, currency, amount) end
+    |> call_semaphore(from_user, "sender")
   end
 
-  defp do_transfer_funds(from_user, to_user, amount, currency) do
-    Semaphore.call(to_user, @user_operations_max_concurrency, fn ->
-      Users.transfer_funds(from_user, to_user, currency, amount)
-    end)
+  defp do_transfer_funds(from_user, to_user, currency, amount) do
+    fn -> Users.transfer_funds(from_user, to_user, currency, amount) end
+    |> call_semaphore(to_user, "receiver")
   end
 
   defp validate_string(string) when is_bitstring(string) and string != "", do: :ok
@@ -161,4 +151,8 @@ defmodule ExBanking do
 
   defp validate_non_neg_number(negative) when negative < 0, do: {:error, :wrong_arguments}
   defp validate_non_neg_number(_number), do: :ok
+
+  defp call_semaphore(function, user, user_type) do
+    ExBanking.Semaphore.call(function, user, user_type)
+  end
 end
