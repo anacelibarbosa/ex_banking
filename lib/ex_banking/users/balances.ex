@@ -10,7 +10,7 @@ defmodule ExBanking.Users.Balances do
 
     balance = :sys.get_state(pid)
 
-    {:ok, balance}
+    {:ok, Decimal.to_float(balance)}
   end
 
   defp get_balance_registry(user, currency) do
@@ -25,5 +25,38 @@ defmodule ExBanking.Users.Balances do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
     end
+  end
+
+  @spec deposit_amount(String.t(), String.t(), number()) :: any()
+  def deposit_amount(user, currency, amount) do
+    pid = get_balance_registry(user, currency)
+    decimal_amount = number_to_decimal(amount)
+
+    {:ok, balance} = GenServer.call(pid, {:credit, decimal_amount})
+
+    {:ok, Decimal.to_float(balance)}
+  end
+
+  @spec withdraw_amount(String.t(), String.t(), number()) :: any()
+  def withdraw_amount(user, currency, amount) do
+    pid = get_balance_registry(user, currency)
+    decimal_amount = number_to_decimal(amount)
+
+    case GenServer.call(pid, {:debit, decimal_amount}) do
+      {:ok, new_balance} -> {:ok, Decimal.to_float(new_balance)}
+      {:error, :not_enough_money} -> {:error, :not_enough_money}
+    end
+  end
+
+  def number_to_decimal(number) when is_float(number) do
+    number
+    |> Decimal.from_float()
+    |> Decimal.round(2)
+  end
+
+  def number_to_decimal(number) do
+    number
+    |> Decimal.new()
+    |> Decimal.round(2)
   end
 end
