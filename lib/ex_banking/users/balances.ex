@@ -48,6 +48,20 @@ defmodule ExBanking.Users.Balances do
     end
   end
 
+  @spec transfer_amount(String.t(), String.t(), String.t(), number()) :: any()
+  def transfer_amount(from_user, to_user, currency, amount) do
+    from_pid = get_balance_registry(from_user, currency)
+    to_pid = get_balance_registry(to_user, currency)
+    decimal_amount = number_to_decimal(amount)
+
+    with {:ok, new_balance_from} <- GenServer.call(from_pid, {:debit, decimal_amount}),
+         {:ok, new_balance_to} <- GenServer.call(to_pid, {:credit, decimal_amount}) do
+      {:ok, {Decimal.to_float(new_balance_from), Decimal.to_float(new_balance_to)}}
+    else
+      {:error, :not_enough_money} -> {:error, :not_enough_money}
+    end
+  end
+
   def number_to_decimal(number) when is_float(number) do
     number
     |> Decimal.from_float()

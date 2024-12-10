@@ -71,4 +71,13 @@ defmodule ExBankingTest do
       assert ExBanking.withdraw("user_6", 2.124, "usd") === {:ok, 0.00}
     end
   end
+
+  describe "send/4" do
+    test "given valid params, should return correctly" do
+      assert ExBanking.create_user("user_7") == :ok
+      assert ExBanking.create_user("user_8") == :ok
+      assert ExBanking.deposit("user_7", 10, "usd") === {:ok, 10.00}
+      assert ExBanking.send("user_7", "user_8", 2.124, "usd") === {:ok, {7.88, 2.12}}
+    end
+  end
 end

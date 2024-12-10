@@ -6,8 +6,11 @@ defmodule ExBanking.Users do
   alias ExBanking.Users.Balances
 
   @type amount :: number()
+
   @type currency :: String.t()
   @type user :: String.t()
+  @type from_user :: String.t()
+  @type to_user :: String.t()
 
   @type result_tuple :: {:ok, any()} | {:error, any()}
 
@@ -43,5 +46,10 @@ defmodule ExBanking.Users do
   @spec withdraw_amount_from_balance(user, currency, amount) :: result_tuple
   def withdraw_amount_from_balance(user, currency, amount) do
     Balances.withdraw_amount(user, currency, amount)
+  end
+
+  @spec transfer_funds(from_user, to_user, currency, amount) :: result_tuple
+  def transfer_funds(from_user, to_user, currency, amount) do
+    Balances.transfer_amount(from_user, to_user, currency, amount)
   end
 end
